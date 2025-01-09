@@ -56,8 +56,8 @@ A simple, intuitive web-based tool for creating and managing ASCII tree diagrams
         └── Button: Signup
     ├── Link: Page 2
     ├── Link: Page 3
-    └── Link: Page 4```
-
+    └── Link: Page 4
+```
 ## Contributing
 
 We welcome contributions! Here are some areas where you can help improve the project:

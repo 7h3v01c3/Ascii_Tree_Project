@@ -49,14 +49,14 @@ A simple, intuitive web-based tool for creating and managing ASCII tree diagrams
    - `fail` to mark as incomplete (✘)
 
 ### Example Tree
-├── Root: Your Cool Website
+```├── Root: Your Cool Website
   ├── Link: Page 1
     └── Page: Page 1
       ├── Page: Page Stuff [Actions: Sign Up here goodness]
         └── Button: Signup
     ├── Link: Page 2
     ├── Link: Page 3
-    └── Link: Page 4
+    └── Link: Page 4```
 
 ## Contributing
 

@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Tree Flow Builder</title>
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --border-color: #e0e0e0;
+            --background-gray: #f8f9fa;
+            --text-color: #333;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.5;
+            color: var(--text-color);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            color: var(--text-color);
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 0 0 16px;
+            color: var(--text-color);
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 32px;
+            min-height: calc(100vh - 100px);
+            align-items: start;
+        }
+
+        .controls {
+            background: var(--background-gray);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            width: 300px;
+            resize: vertical;
+            overflow-y: auto;
+            min-height: 400px;
+            max-height: calc(100vh - 100px);
+            position: sticky;
+            top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: calc(100% - 24px);
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0,102,204,0.2);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0052a3;
+        }
+
+        button.secondary {
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        button.secondary:hover {
+            background: var(--background-gray);
+        }
+
+        .output {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 24px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 300px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .output span {
+            cursor: pointer;
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .output span:hover {
+            background: rgba(0,102,204,0.1);
+            transform: translateX(2px);
+        }
+
+        #pasteAscii {
+            font-family: 'Courier New', Courier, monospace;
+            width: calc(100% - 24px);
+            min-height: 100px;
+            margin-bottom: 16px;
+            resize: vertical;
+        }
+
+        .import-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+            width: 100%;
+        }
+
+        .main-content {
+            min-height: 400px;
+            height: 100%;
+            background: var(--background-gray);
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .output {
+            position: relative;
+        }
+
+        .output:empty::before {
+            content: "[Your tree will appear here]";
+            color: #999;
+            font-style: italic;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .crypto-address {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .crypto-address code {
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex: 1;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 13px;
+            padding: 8px 12px;
+            background: var(--background-gray);
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .crypto-address code:hover {
+            background-color: var(--border-color);
+        }
+
+        .crypto-address code:hover::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+
+        .crypto-address code:hover::after {
+            content: "";
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-bottom-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 850px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+            color: var(--text-color);
+        }
+
+        .donate-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 100;
+        }
+
+        .donate-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .crypto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .crypto-address code:active {
+            background-color: var(--border-color);
+        }
+
+        .node-path {
+            background: var(--background-gray);
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .node-path span {
+            color: var(--primary-color);
+        }
+
+        .node-path .separator {
+            color: #666;
+            margin: 0 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ASCII Tree Flow Builder</h1>
+    <div class="container">
+        <div class="controls">
+            <div class="form-group">
+                <label for="nodeName">Node Name</label>
+                <input type="text" id="nodeName" placeholder="Enter name..." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="nodeType">Node Type</label>
+                <select id="nodeType">
+                    <option value="page">Page</option>
+                    <option value="section">Section</option>
+                    <option value="button">Button</option>
+                    <option value="breadcrumb">Breadcrumb</option>
+                    <option value="modal">Modal</option>
+                    <option value="dropdown">Dropdown</option>
+                    <option value="form">Form</option>
+                    <option value="input">Input</option>
+                    <option value="link">Link</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nodeActions">Actions (Optional)</label>
+                <textarea id="nodeActions" placeholder="Enter actions, one per line..." rows="4"></textarea>
+            </div>
+
+            <div class="button-group">
+                <button id="addNode">Add Node</button>
+                <button id="resetNode" class="secondary">Reset Node</button>
+                <button id="copyAscii">Copy ASCII</button>
+            </div>
+
+            <div class="import-section">
+                <div class="form-group">
+                    <label for="pasteAscii">Import ASCII Tree</label>
+                    <textarea id="pasteAscii" placeholder="Paste ASCII tree here..."></textarea>
+                </div>
+                <button id="parseAscii" class="secondary">Import Tree</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <h2>Tree Preview</h2>
+            <div class="node-path">
+                Current Path: <span id="currentPath">Root</span>
+            </div>
+            <div class="output" id="asciiOutput">[Your tree will appear here]</div>
+        </div>
+    </div>
+
+    <button class="donate-button" onclick="showDonateModal()">
+        Support Project 💝
+    </button>
+
+    <div class="modal-overlay" id="donateModal">
+        <div class="modal">
+            <button class="modal-close" onclick="hideDonateModal()">&times;</button>
+            <h2>Support the Project</h2>
+            <p>If you find this tool useful, consider supporting its development or just to say thanks!:</p>
+            <div class="crypto-grid">
+                <div class="crypto-address">
+                    <strong>BTC:</strong>
+                    <code 
+                        data-tooltip="Click to copy: bc1q7lt86s29att6s773ryl78djjv5llfzqw3gymdt"
+                        onclick="copyToClipboard('bc1q7lt86s29att6s773ryl78djjv5llfzqw3gymdt')">
+                        bc1q7lt86s29att6s773ryl78djjv5llfzqw3gymdt
+                    </code>
+                </div>
+                <div class="crypto-address">
+                    <strong>ETH:</strong>
+                    <code onclick="copyToClipboard('0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7')" 
+                        data-tooltip="Click to copy: 0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7">
+                        0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7</code>
+                </div>
+                <div class="crypto-address">
+                    <strong>USDC:</strong>
+                    <code onclick="copyToClipboard('0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7')" 
+                        data-tooltip="Click to copy: 0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7">
+                        0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7</code>
+                </div>
+                <div class="crypto-address">
+                    <strong>USDT:</strong>
+                    <code 
+                        data-tooltip="Click to copy: 0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7"
+                        onclick="copyToClipboard('0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7')">
+                        0xB589E182dc4AB468fb0edAdb7f28aBAEDabB54e7
+                    </code>
+                </div>
+                <div class="crypto-address">
+                    <strong>XRP:</strong>
+                     <code 
+                        data-tooltip="Click to copy: r4f2YKDMxUEAq6hnsJkiR942SLQF82oJ3v"
+                        onclick="copyToClipboard('r4f2YKDMxUEAq6hnsJkiR942SLQF82oJ3v')">
+                        r4f2YKDMxUEAq6hnsJkiR942SLQF82oJ3v
+                    </code>
+                </div>
+                <div class="crypto-address">
+                    <strong>XLM:</strong>
+                    <code 
+                        data-tooltip="Click to copy: GB6OYSEHDLW5LUUCEKTPLESDA7VIMDUGOOM63L26BNGV3QFWMXAPTPJE"
+                        onclick="copyToClipboard('GB6OYSEHDLW5LUUCEKTPLESDA7VIMDUGOOM63L26BNGV3QFWMXAPTPJE')">
+                        GB6OYSEHDLW5LUUCEKTPLESDA7VIMDUGOOM63L26BNGV3QFWMXAPTPJE
+                    </code>
+                </div>
+                <div class="crypto-address">
+                    <strong>DIVI:</strong>
+                    <code 
+                        data-tooltip="Click to copy: DRLEo789gDU16eWXUjQNRGDCsEBrsZ8fcR"
+                        onclick="copyToClipboard('DRLEo789gDU16eWXUjQNRGDCsEBrsZ8fcR')">
+                        DRLEo789gDU16eWXUjQNRGDCsEBrsZ8fcR
+                    </code>
+                </div>
+                <div class="crypto-address">
+                    <strong>PIVX:</strong>
+                    <code 
+                        data-tooltip="Click to copy: DBZ5pgF142hV7V7Ro5dmDwWSSf5ArYcZ2j"
+                        onclick="copyToClipboard('DBZ5pgF142hV7V7Ro5dmDwWSSf5ArYcZ2j')">
+                        DBZ5pgF142hV7V7Ro5dmDwWSSf5ArYcZ2j
+                    </code>
+                </div>
+                <div class="crypto-address">
+                    <strong>LTC:</strong>
+                     <code 
+                        data-tooltip="Click to copy: LPjK1vkopZqopUZDGjRdkH7FMHiMQGWYTs"
+                        onclick="copyToClipboard('LPjK1vkopZqopUZDGjRdkH7FMHiMQGWYTs')">
+                        LPjK1vkopZqopUZDGjRdkH7FMHiMQGWYTs
+                    </code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tree = { name: "Root", type: "root", actions: [], metadata: {}, children: [] };
+        const stack = [tree];
+        const asciiLines = [];
+        let nodeMap = new Map();
+        let lastAddedNode = null;
+
+        // Initial path update
+        updateNodePath();
+
+        // Function to Parse ASCII Tree
+		function parseAsciiTree(ascii) {
+		const lines = ascii.split("\n").filter(line => line.trim());
+		const root = { name: "Root", type: "root", actions: [], metadata: {}, children: [] };
+		let lastNodeAtDepth = new Map();
+		lastNodeAtDepth.set(0, root);
+
+		lines.forEach((line, index) => {
+			// Get the raw line for depth calculation
+			const indent = line.match(/^\s*/)[0];
+			const depth = indent.length / 4;  // Each level is 4 spaces
+
+			// Skip if this is an empty line
+			if (!line.trim()) return;
+
+			// Handle the root line specially
+			if (depth === 0) {
+				const rootMatch = line.match(/├── (?:Root: )?(.+)/);
+				if (rootMatch) {
+					root.name = rootMatch[1];
+					// Update the stack with the new root name
+					stack[0] = root;
+					return;
+				}
+			}
+
+			// Clean the line - remove all ├──, └── and extra spaces
+			const cleanLine = line.trim().replace(/^[├└]── /, "");
+			
+			// Parse node information
+			let [typeAndName, actionsStr] = cleanLine.split("[Actions:");
+			const [type, name] = typeAndName.split(":").map(s => s.trim());
+			
+			// Parse actions if they exist
+			const actions = actionsStr 
+				? actionsStr.replace("]", "").split(",").map(a => a.trim())
+				: [];
+
+			const newNode = {
+				name: name || "Unnamed",
+				type: type.toLowerCase(),
+				actions,
+				metadata: {},
+				children: []
+			};
+
+			// Find the correct parent based on depth
+			for (let d = depth - 1; d >= 0; d--) {
+				const possibleParent = lastNodeAtDepth.get(d);
+				if (possibleParent) {
+					possibleParent.children.push(newNode);
+					break;
+				}
+			}
+
+			// Update the last node at this depth
+			lastNodeAtDepth.set(depth, newNode);
+
+			// Clear any deeper levels from our map as they're no longer valid parents
+			for (let d = depth + 1; d < 10; d++) {
+				lastNodeAtDepth.delete(d);
+			}
+		});
+
+		return root;
+	}
+
+
+
+
+
+
+		document.getElementById("parseAscii").addEventListener("click", () => {
+			const asciiInput = document.getElementById("pasteAscii").value.trim();
+			if (!asciiInput) {
+				alert("Please paste a valid ASCII tree.");
+				return;
+			}
+
+			try {
+				const parsedTree = parseAsciiTree(asciiInput);
+				if (confirm("Replace the current tree with the pasted one?")) {
+					Object.assign(tree, parsedTree);
+					// Reset stack with updated root
+					stack.length = 0;
+					stack.push(tree);
+					renderAsciiTree();
+					updateNodePath();
+					alert("Tree restored successfully!");
+				}
+			} catch (error) {
+				console.error("Error parsing ASCII tree:", error);
+				alert("An error occurred while parsing the tree.");
+			}
+		});
+
+
+
+        // Other existing functions remain unchanged
+        function generateNodeId() {
+            return `node-${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        function generateAsciiTree(node, level = 0, isLast = false) {
+            const indent = "    ".repeat(level);
+            const nodeId = generateNodeId();
+            nodeMap.set(nodeId, node);
+
+            // Choose the correct branch character
+            const branchChar = isLast ? "└" : "├";
+
+            let nodeDisplay = `${node.type.charAt(0).toUpperCase() + node.type.slice(1)}: ${node.name}`;
+            if (node.actions.length > 0) {
+                nodeDisplay += ` [Actions: ${node.actions.join(", ")}]`;
+            }
+            asciiLines.push(`${indent}${branchChar}── <span data-id="${nodeId}">${nodeDisplay}</span>`);
+
+            // Handle metadata
+            for (const [key, value] of Object.entries(node.metadata)) {
+                asciiLines.push(`${indent}    └── Metadata: ${key} = ${value}`);
+            }
+
+            // Process children
+            const children = node.children;
+            children.forEach((child, index) => {
+                const isLastChild = index === children.length - 1;
+                generateAsciiTree(child, level + 1, isLastChild);
+            });
+        }
+
+        function renderAsciiTree() {
+            asciiLines.length = 0;
+            nodeMap.clear();
+            generateAsciiTree(tree);
+
+            const output = document.getElementById("asciiOutput");
+            output.innerHTML = asciiLines.join("\n");
+
+            output.querySelectorAll("span[data-id]").forEach((span) => {
+                span.addEventListener("click", (e) => {
+                    const nodeId = e.target.getAttribute("data-id");
+                    const node = nodeMap.get(nodeId);
+
+                    const newName = prompt(
+                        `Enter a new name for this node:\n(Current: ${node.name})\n\n` +
+                        `- Enter 'select' to navigate to this node\n` +
+                        `- Enter 'delete' to remove the node\n` +
+                        `- Enter 'pass' to mark as ✔\n` +
+                        `- Enter 'fail' to mark as ✘`
+                    );
+
+                    if (newName === "select") {
+                        // Find path to this node and update stack
+                        while (stack[stack.length - 1] !== node && stack.length > 0) {
+                            stack.pop();
+                        }
+                        stack.push(node);
+                        renderAsciiTree();
+                        updateNodePath();
+                    } else if (newName === "delete") {
+                        if (node === tree) {
+                            alert("Cannot delete root node!");
+                            return;
+                        }
+                        deleteNode(node);
+                        updateNodePath();
+                    } else if (newName === "pass" || newName === "fail") {
+                        const baseName = node.name.replace(/[✔✘]\s*$/, '').trim();
+                        node.name = `${baseName} ${newName === "pass" ? "✔" : "✘"}`;
+                        renderAsciiTree();
+                        updateNodePath();
+                    } else if (newName) {
+                        node.name = newName;
+                        renderAsciiTree();
+                        updateNodePath();
+                    }
+                });
+            });
+        }
+
+        renderAsciiTree();
+
+        // Add Node functionality
+        document.addEventListener("DOMContentLoaded", function() {
+            // Add Node button
+            document.getElementById("addNode").addEventListener("click", () => {
+                const name = document.getElementById("nodeName").value.trim();
+                const type = document.getElementById("nodeType").value;
+                const actions = document.getElementById("nodeActions").value
+                    .split("\n")
+                    .map(action => action.trim())
+                    .filter(action => action);
+
+                if (!name) {
+                    alert("Please enter a node name");
+                    return;
+                }
+
+                const newNode = {
+                    name,
+                    type,
+                    actions,
+                    metadata: {},
+                    children: []
+                };
+
+                const currentNode = stack[stack.length - 1];
+                currentNode.children.unshift(newNode);
+                stack.push(newNode);
+                lastAddedNode = newNode;
+
+                document.getElementById("nodeName").value = "";
+                document.getElementById("nodeActions").value = "";
+
+                renderAsciiTree();
+                updateNodePath();
+            });
+
+            // Reset Node button
+            document.getElementById("resetNode").addEventListener("click", () => {
+                if (lastAddedNode) {
+                    while (stack[stack.length - 1] !== lastAddedNode && stack.length > 1) {
+                        stack.pop();
+                    }
+                    renderAsciiTree();
+                    updateNodePath();
+                }
+            });
+
+            // Copy ASCII button
+            document.getElementById("copyAscii").addEventListener("click", () => {
+                const asciiText = asciiLines.join("\n").replace(/<span[^>]*>|<\/span>/g, "");
+                navigator.clipboard.writeText(asciiText)
+                    .then(() => alert("ASCII tree copied to clipboard!"))
+                    .catch(err => alert("Failed to copy: " + err));
+            });
+        });
+
+        // Add this temporary debug code
+        document.querySelectorAll('button').forEach(button => {
+            console.log('Found button:', button.id);
+            button.addEventListener('click', (e) => {
+                console.log('Button clicked:', e.target.id);
+            });
+        });
+
+        // Add Copy JSON functionality
+        document.getElementById("copyJson").addEventListener("click", () => {
+            const jsonStr = JSON.stringify(tree, null, 2);
+            navigator.clipboard.writeText(jsonStr)
+                .then(() => alert("JSON tree copied to clipboard!"))
+                .catch(err => alert("Failed to copy: " + err));
+        });
+
+        // Add this function before renderAsciiTree()
+        function deleteNode(nodeToDelete) {
+            // Find parent node that contains this node in its children
+            function findParentNode(searchNode = tree) {
+                for (let i = 0; i < searchNode.children.length; i++) {
+                    if (searchNode.children[i] === nodeToDelete) {
+                        // Found the parent, remove the node
+                        searchNode.children.splice(i, 1);
+                        return true;
+                    }
+                    if (searchNode.children[i].children.length > 0) {
+                        if (findParentNode(searchNode.children[i])) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            // Remove node from stack if it's there
+            const stackIndex = stack.indexOf(nodeToDelete);
+            if (stackIndex !== -1) {
+                stack.splice(stackIndex);
+            }
+
+            // Find and remove the node
+            if (findParentNode()) {
+                renderAsciiTree();
+                updateNodePath();
+            }
+        }
+
+        function showDonateModal() {
+            document.getElementById('donateModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideDonateModal() {
+            document.getElementById('donateModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('donateModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideDonateModal();
+            }
+        });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback that it was copied
+                const notification = document.createElement('div');
+                notification.textContent = 'Copied to clipboard!';
+                notification.style.cssText = `
+                    position: fixed;
+                    bottom: 80px;
+                    right: 24px;
+                    background: var(--success-color);
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    animation: fadeOut 2s forwards;
+                    z-index: 1000;
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        function updateNodePath() {
+            const pathElement = document.getElementById('currentPath');
+            const path = stack.map(node => `${node.type.charAt(0).toUpperCase() + node.type.slice(1)}: ${node.name}`);
+            pathElement.innerHTML = path.join('<span class="separator">→</span>');
+        }
+    </script>
+</body>
+</html>
